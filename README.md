@@ -80,23 +80,6 @@ data/                   # Temporary recording storage
 | `npm run lint` | Run linter |
 | `npm run format` | Format code with Prettier |
 
-## Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Guidelines
-
-- Follow the existing code style
-- Run `npm run check` and `npm run lint` before submitting
-- Write clear commit messages
-- Update documentation as needed
-
 ## Tech Stack
 
 - [SvelteKit](https://kit.svelte.dev/) - Full-stack framework
@@ -104,7 +87,3 @@ Contributions are welcome! Here's how you can help:
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [Vite](https://vitejs.dev/) - Build tool
 - [FFmpeg](https://ffmpeg.org/) - Audio processing
-
-## License
-
-This project is private. All rights reserved.
