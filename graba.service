@@ -1,0 +1,17 @@
+[Unit]
+Description=Graba Audio Recorder
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/graba
+Environment=PORT=3494
+Environment=BODY_SIZE_LIMIT=Infinity
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node build
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
