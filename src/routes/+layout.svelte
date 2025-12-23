@@ -1,7 +1,7 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
 	import LanguageSelector from '$lib/components/LanguageSelector.svelte';
-	import { initializeLanguage } from '$lib/i18n';
+	import { initializeLanguage } from '$lib/i18n/index.svelte';
 
 	let { children } = $props();
 

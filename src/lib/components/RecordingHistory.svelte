@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Recording } from '$lib/server/recordings';
-	import { getLanguageState } from '$lib/i18n';
+	import { getLanguageState } from '$lib/i18n/index.svelte';
 
 	interface Props {
 		recordings: Recording[];

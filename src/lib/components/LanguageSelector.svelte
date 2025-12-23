@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getLanguageState, type Language } from '$lib/i18n';
+	import { getLanguageState, type Language } from '$lib/i18n/index.svelte';
 
 	const i18n = getLanguageState();
 

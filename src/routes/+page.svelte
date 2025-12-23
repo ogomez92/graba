@@ -2,7 +2,7 @@
 	import AudioRecorder from '$lib/components/AudioRecorder.svelte';
 	import RecordingHistory from '$lib/components/RecordingHistory.svelte';
 	import type { Recording } from '$lib/server/recordings';
-	import { getLanguageState } from '$lib/i18n';
+	import { getLanguageState } from '$lib/i18n/index.svelte';
 
 	interface PageData {
 		recordings: Recording[];

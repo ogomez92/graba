@@ -10,7 +10,7 @@
 		type AudioDevice
 	} from '$lib/utils/media';
 	import { getRecorderState, formatDuration, type OutputFormat } from '$lib/stores/recorder.svelte';
-	import { getLanguageState } from '$lib/i18n';
+	import { getLanguageState } from '$lib/i18n/index.svelte';
 
 	interface Props {
 		onRecordingComplete?: () => void;
