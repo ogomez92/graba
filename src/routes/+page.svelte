@@ -2,6 +2,7 @@
 	import AudioRecorder from '$lib/components/AudioRecorder.svelte';
 	import RecordingHistory from '$lib/components/RecordingHistory.svelte';
 	import type { Recording } from '$lib/server/recordings';
+	import { getLanguageState } from '$lib/i18n';
 
 	interface PageData {
 		recordings: Recording[];
@@ -9,6 +10,8 @@
 
 	let { data }: { data: PageData } = $props();
 	let localRecordings = $state<Recording[] | null>(null);
+
+	const i18n = getLanguageState();
 
 	// Use local state if set, otherwise use server data
 	let recordings = $derived(localRecordings ?? data.recordings);
@@ -31,14 +34,14 @@
 </script>
 
 <svelte:head>
-	<title>Audio Recorder</title>
-	<meta name="description" content="High-quality screen and microphone audio recorder" />
+	<title>{i18n.t.appTitle}</title>
+	<meta name="description" content={i18n.t.appDescription} />
 </svelte:head>
 
 <main>
-	<h1>Audio Recorder</h1>
+	<h1>{i18n.t.appTitle}</h1>
 	<p class="intro">
-		Record high-quality audio from your screen or browser tab, with optional microphone mixing.
+		{i18n.t.appIntro}
 	</p>
 
 	<AudioRecorder onRecordingComplete={refreshRecordings} />

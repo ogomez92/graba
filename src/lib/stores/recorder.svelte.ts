@@ -2,6 +2,8 @@
  * Recording state management using Svelte 5 runes
  */
 
+import type { Translations } from '$lib/i18n';
+
 export type RecordingState = 'idle' | 'recording' | 'stopped' | 'processing' | 'ready' | 'error';
 
 export type OutputFormat = 'mp3' | 'aac' | 'opus';
@@ -135,32 +137,32 @@ export function getRecorderState() {
 		},
 
 		// Actions
-		startRecording() {
+		startRecording(t: Translations) {
 			state = 'recording';
-			statusMessage = 'Recording started';
+			statusMessage = t.recordingStarted;
 			errorMessage = '';
 			startDurationTimer();
 		},
 
-		stopRecording(system: Blob | null, mic: Blob | null) {
+		stopRecording(system: Blob | null, mic: Blob | null, t: Translations) {
 			stopDurationTimer();
 			state = 'stopped';
 			recordedTracks = {
 				systemAudio: system,
 				micAudio: mic
 			};
-			statusMessage = 'Recording stopped. Configure post-processing options.';
+			statusMessage = t.recordingStopped;
 		},
 
-		setProcessing() {
+		setProcessing(t: Translations) {
 			state = 'processing';
-			statusMessage = 'Processing audio files...';
+			statusMessage = t.processingFiles;
 		},
 
-		setReady(tracks: ProcessedTracks) {
+		setReady(tracks: ProcessedTracks, t: Translations) {
 			processedTracks = tracks;
 			state = 'ready';
-			statusMessage = 'Downloads ready';
+			statusMessage = t.downloadsReadyStatus;
 		},
 
 		setError(message: string) {

@@ -10,6 +10,7 @@
 		type AudioDevice
 	} from '$lib/utils/media';
 	import { getRecorderState, formatDuration, type OutputFormat } from '$lib/stores/recorder.svelte';
+	import { getLanguageState } from '$lib/i18n';
 
 	interface Props {
 		onRecordingComplete?: () => void;
@@ -18,6 +19,7 @@
 	let { onRecordingComplete }: Props = $props();
 
 	const recorder = getRecorderState();
+	const i18n = getLanguageState();
 
 	let audioDevices = $state<AudioDevice[]>([]);
 	let devicesLoaded = $state(false);
@@ -80,12 +82,12 @@
 			}
 
 			systemRecorder.start();
-			recorder.startRecording();
+			recorder.startRecording(i18n.t);
 		} catch (err) {
 			if (err instanceof MediaCaptureError) {
 				recorder.setError(err.message);
 			} else {
-				recorder.setError('Failed to start recording. Please try again.');
+				recorder.setError(i18n.t.failedToStartRecording);
 			}
 
 			// Clean up on error
@@ -104,7 +106,7 @@
 			micChunksPromise || Promise.resolve(null)
 		]);
 
-		recorder.stopRecording(systemBlob, micBlob);
+		recorder.stopRecording(systemBlob, micBlob, i18n.t);
 
 		// Stop all tracks
 		stopStream(systemStream);
@@ -120,7 +122,7 @@
 	}
 
 	async function processAudio() {
-		recorder.setProcessing();
+		recorder.setProcessing(i18n.t);
 
 		const formData = new FormData();
 
@@ -154,7 +156,7 @@
 				systemAudio: result.systemAudioUrl || null,
 				micAudio: result.micAudioUrl || null,
 				mixedAudio: result.mixedAudioUrl || null
-			});
+			}, i18n.t);
 
 			onRecordingComplete?.();
 		} catch (err) {
@@ -199,13 +201,13 @@
 	{#if recorder.hasError}
 		<div role="alert" class="error-message">
 			{recorder.errorMessage}
-			<button type="button" onclick={startNewRecording}>Try again</button>
+			<button type="button" onclick={startNewRecording}>{i18n.t.tryAgain}</button>
 		</div>
 	{/if}
 
 	<!-- Pre-recording controls -->
 	{#if recorder.state === 'idle'}
-		<div class="controls-section" role="group" aria-label="Recording options">
+		<div class="controls-section" role="group" aria-label={i18n.t.recordingOptions}>
 			<label class="checkbox-label">
 				<input
 					type="checkbox"
@@ -213,15 +215,15 @@
 					onchange={handleMicChange}
 					aria-describedby="mic-hint"
 				/>
-				Include microphone
+				{i18n.t.includeMicrophone}
 			</label>
 			<p id="mic-hint" class="hint">
-				Enable to record your voice along with system audio
+				{i18n.t.microphoneHint}
 			</p>
 
 			{#if recorder.includeMicrophone && audioDevices.length > 0}
 				<div class="mic-select">
-					<label for="mic-device">Microphone:</label>
+					<label for="mic-device">{i18n.t.microphoneLabel}</label>
 					<select
 						id="mic-device"
 						value={recorder.selectedMicId}
@@ -235,36 +237,36 @@
 			{/if}
 
 			<button type="button" class="btn btn-record" onclick={startRecording}>
-				Start Recording
+				{i18n.t.startRecording}
 			</button>
 		</div>
 	{/if}
 
 	<!-- Recording in progress -->
 	{#if recorder.isRecording}
-		<div class="recording-section" role="group" aria-label="Recording in progress">
+		<div class="recording-section" role="group" aria-label={i18n.t.recordingInProgress}>
 			<div class="recording-indicator" aria-hidden="true">
 				<span class="pulse"></span>
-				Recording
+				{i18n.t.recording}
 			</div>
 
 			<p class="duration" aria-live="off">
-				Duration: <span aria-label="Recording duration">{formatDuration(recorder.recordingDuration)}</span>
+				{i18n.t.duration} <span aria-label={i18n.t.recordingDuration}>{formatDuration(recorder.recordingDuration)}</span>
 			</p>
 
 			<button type="button" class="btn btn-stop" onclick={stopRecording}>
-				Stop Recording
+				{i18n.t.stopRecording}
 			</button>
 		</div>
 	{/if}
 
 	<!-- Post-processing options -->
 	{#if recorder.state === 'stopped'}
-		<div class="postprocess-section" role="group" aria-label="Post-processing options">
-			<h3>Post-Processing Options</h3>
+		<div class="postprocess-section" role="group" aria-label={i18n.t.postProcessingOptions}>
+			<h3>{i18n.t.postProcessingOptions}</h3>
 
 			<fieldset>
-				<legend>Output format</legend>
+				<legend>{i18n.t.outputFormat}</legend>
 				<label>
 					<input
 						type="radio"
@@ -273,7 +275,7 @@
 						checked={recorder.processingOptions.outputFormat === 'mp3'}
 						onchange={handleFormatChange}
 					/>
-					MP3 <span class="format-desc">(universal compatibility)</span>
+					{i18n.t.mp3} <span class="format-desc">({i18n.t.mp3Desc})</span>
 				</label>
 				<label>
 					<input
@@ -283,7 +285,7 @@
 						checked={recorder.processingOptions.outputFormat === 'aac'}
 						onchange={handleFormatChange}
 					/>
-					AAC <span class="format-desc">(better quality/size ratio)</span>
+					{i18n.t.aac} <span class="format-desc">({i18n.t.aacDesc})</span>
 				</label>
 				<label>
 					<input
@@ -293,7 +295,7 @@
 						checked={recorder.processingOptions.outputFormat === 'opus'}
 						onchange={handleFormatChange}
 					/>
-					Opus/WebM <span class="format-desc">(best quality, limited compatibility)</span>
+					{i18n.t.opus} <span class="format-desc">({i18n.t.opusDesc})</span>
 				</label>
 			</fieldset>
 
@@ -305,19 +307,19 @@
 						onchange={handleDuckingChange}
 						aria-describedby="duck-hint"
 					/>
-					Duck system audio while speaking
+					{i18n.t.duckSystemAudio}
 				</label>
 				<p id="duck-hint" class="hint">
-					Automatically lower system audio volume when your microphone detects speech
+					{i18n.t.duckHint}
 				</p>
 			{/if}
 
 			<div class="button-group">
 				<button type="button" class="btn btn-primary" onclick={processAudio}>
-					Process Audio
+					{i18n.t.processAudio}
 				</button>
 				<button type="button" class="btn btn-secondary" onclick={startNewRecording}>
-					Start Over
+					{i18n.t.startOver}
 				</button>
 			</div>
 		</div>
@@ -327,15 +329,15 @@
 	{#if recorder.isProcessing}
 		<div class="processing-section" role="alert" aria-busy="true">
 			<div class="spinner" aria-hidden="true"></div>
-			<p>Processing audio files...</p>
-			<p class="hint">This may take a moment for longer recordings.</p>
+			<p>{i18n.t.processingAudio}</p>
+			<p class="hint">{i18n.t.processingHint}</p>
 		</div>
 	{/if}
 
 	<!-- Downloads ready -->
 	{#if recorder.canDownload}
-		<div class="downloads-section" role="group" aria-label="Download options">
-			<h3>Downloads Ready</h3>
+		<div class="downloads-section" role="group" aria-label={i18n.t.downloadOptions}>
+			<h3>{i18n.t.downloadsReady}</h3>
 
 			<div class="download-buttons">
 				{#if recorder.processedTracks.systemAudio}
@@ -344,7 +346,7 @@
 						download="system-audio.{recorder.processingOptions.outputFormat === 'aac' ? 'm4a' : recorder.processingOptions.outputFormat}"
 						class="btn btn-download"
 					>
-						Download System Audio
+						{i18n.t.downloadSystemAudio}
 					</a>
 				{/if}
 
@@ -354,7 +356,7 @@
 						download="microphone.{recorder.processingOptions.outputFormat === 'aac' ? 'm4a' : recorder.processingOptions.outputFormat}"
 						class="btn btn-download"
 					>
-						Download Microphone
+						{i18n.t.downloadMicrophone}
 					</a>
 				{/if}
 
@@ -364,13 +366,13 @@
 						download="mixed.{recorder.processingOptions.outputFormat === 'aac' ? 'm4a' : recorder.processingOptions.outputFormat}"
 						class="btn btn-download"
 					>
-						Download Mixed Track
+						{i18n.t.downloadMixedTrack}
 					</a>
 				{/if}
 			</div>
 
 			<button type="button" class="btn btn-secondary" onclick={startNewRecording}>
-				Record Another
+				{i18n.t.recordAnother}
 			</button>
 		</div>
 	{/if}

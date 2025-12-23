@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Recording } from '$lib/server/recordings';
+	import { getLanguageState } from '$lib/i18n';
 
 	interface Props {
 		recordings: Recording[];
@@ -7,6 +8,8 @@
 	}
 
 	let { recordings, onDelete }: Props = $props();
+
+	const i18n = getLanguageState();
 
 	let previewAudio: HTMLAudioElement | null = $state(null);
 	let currentPreview: { id: string; track: string } | null = $state(null);
@@ -16,7 +19,7 @@
 
 	function formatDate(isoString: string): string {
 		const date = new Date(isoString);
-		return date.toLocaleDateString(undefined, {
+		return date.toLocaleDateString(i18n.language === 'es' ? 'es-ES' : 'en-US', {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -45,23 +48,23 @@
 		const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
 		if (diffDays < 0) {
-			return 'Expired';
+			return i18n.t.expired;
 		} else if (diffDays === 0) {
-			return 'Expires today';
+			return i18n.t.expiresToday;
 		} else if (diffDays === 1) {
-			return 'Expires tomorrow';
+			return i18n.t.expiresTomorrow;
 		}
-		return `Expires in ${diffDays} days`;
+		return i18n.t.expiresInDays(diffDays);
 	}
 
 	function getTrackLabel(track: string): string {
 		switch (track) {
 			case 'mic':
-				return 'Microphone';
+				return i18n.t.microphone;
 			case 'system':
-				return 'System Audio';
+				return i18n.t.systemAudio;
 			case 'mixed':
-				return 'Mixed';
+				return i18n.t.mixed;
 			default:
 				return track;
 		}
@@ -86,11 +89,11 @@
 			if (isPlaying) {
 				previewAudio?.pause();
 				isPlaying = false;
-				statusMessage = 'Preview paused';
+				statusMessage = i18n.t.previewPaused;
 			} else {
 				await previewAudio?.play();
 				isPlaying = true;
-				statusMessage = 'Playing preview';
+				statusMessage = i18n.t.playingPreview;
 			}
 			return;
 		}
@@ -106,12 +109,12 @@
 		audio.onended = () => {
 			isPlaying = false;
 			currentPreview = null;
-			statusMessage = 'Preview ended';
+			statusMessage = i18n.t.previewEnded;
 		};
 		audio.onerror = () => {
 			isPlaying = false;
 			currentPreview = null;
-			statusMessage = 'Preview failed to load';
+			statusMessage = i18n.t.previewFailed;
 		};
 
 		previewAudio = audio;
@@ -120,9 +123,9 @@
 		try {
 			await audio.play();
 			isPlaying = true;
-			statusMessage = `Playing ${getTrackLabel(track)} preview`;
+			statusMessage = `${i18n.t.playingPreview} ${getTrackLabel(track)}`;
 		} catch {
-			statusMessage = 'Failed to play preview';
+			statusMessage = i18n.t.failedToPlayPreview;
 		}
 	}
 
@@ -135,13 +138,13 @@
 			});
 
 			if (response.ok) {
-				statusMessage = 'Recording deleted';
+				statusMessage = i18n.t.recordingDeleted;
 				onDelete?.(id);
 			} else {
-				statusMessage = 'Failed to delete recording';
+				statusMessage = i18n.t.failedToDeleteRecording;
 			}
 		} catch {
-			statusMessage = 'Failed to delete recording';
+			statusMessage = i18n.t.failedToDeleteRecording;
 		} finally {
 			deletingId = null;
 		}
@@ -166,16 +169,16 @@
 	});
 </script>
 
-<section class="recording-history" aria-label="Past recordings">
+<section class="recording-history" aria-label={i18n.t.recentRecordings}>
 	<!-- Status announcer -->
 	<div role="status" aria-live="polite" class="sr-only">
 		{statusMessage}
 	</div>
 
-	<h2>Recent Recordings</h2>
+	<h2>{i18n.t.recentRecordings}</h2>
 
 	{#if recordings.length === 0}
-		<p class="empty-message">No recordings yet. Start by recording above.</p>
+		<p class="empty-message">{i18n.t.noRecordingsYet}</p>
 	{:else}
 		<ul class="recording-list">
 			{#each recordings as recording (recording.id)}
@@ -190,7 +193,7 @@
 						</span>
 					</div>
 
-					<div class="recording-tracks" role="group" aria-label="Available tracks">
+					<div class="recording-tracks" role="group" aria-label={i18n.t.availableTracks}>
 						{#each getAvailableTracks(recording) as track}
 							<div class="track">
 								<button
@@ -198,7 +201,7 @@
 									class="btn-preview"
 									class:playing={currentPreview?.id === recording.id && currentPreview?.track === track && isPlaying}
 									onclick={() => togglePreview(recording.id, track)}
-									aria-label="{currentPreview?.id === recording.id && currentPreview?.track === track && isPlaying ? 'Pause' : 'Play'} {getTrackLabel(track)} preview"
+									aria-label={currentPreview?.id === recording.id && currentPreview?.track === track && isPlaying ? i18n.t.pausePreview(getTrackLabel(track)) : i18n.t.playPreview(getTrackLabel(track))}
 								>
 									{#if currentPreview?.id === recording.id && currentPreview?.track === track && isPlaying}
 										⏸
@@ -211,9 +214,9 @@
 									href="/api/recordings/{recording.id}/{track}/download"
 									download="{track}-{recording.id}.{getFileExtension(recording.format)}"
 									class="btn-download-small"
-									aria-label="Download {getTrackLabel(track)}"
+									aria-label={i18n.t.downloadTrack(getTrackLabel(track))}
 								>
-									Download
+									{i18n.t.download}
 								</a>
 							</div>
 						{/each}
@@ -224,12 +227,12 @@
 						class="btn-delete"
 						onclick={() => handleDelete(recording.id)}
 						disabled={deletingId === recording.id}
-						aria-label="Delete recording from {formatDate(recording.createdAt)}"
+						aria-label={i18n.t.deleteRecordingFrom(formatDate(recording.createdAt))}
 					>
 						{#if deletingId === recording.id}
-							Deleting...
+							{i18n.t.deleting}
 						{:else}
-							Delete
+							{i18n.t.delete}
 						{/if}
 					</button>
 				</li>
