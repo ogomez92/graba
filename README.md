@@ -1,38 +1,110 @@
-# sv
+# Graba
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A web-based audio recorder that captures high-quality audio from your screen or browser tab, with optional microphone mixing.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **System Audio Recording** - Capture audio from any browser tab or screen share
+- **Microphone Integration** - Optionally record your voice alongside system audio
+- **Audio Ducking** - Automatically lower system audio volume when speaking
+- **Multiple Output Formats** - Export as MP3, AAC, or Opus/WebM
+- **Recording History** - Access and manage your recent recordings
+- **Multilingual** - Available in English and Spanish
 
-```sh
-# create a new project in the current directory
-npx sv create
+## Requirements
 
-# create a new project in my-app
-npx sv create my-app
+- Node.js 18+
+- FFmpeg (for audio processing)
+
+## Getting Started
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/ogomez92/graba.git
+cd graba
+
+# Install dependencies
+npm install
 ```
 
-## Developing
+### Development
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-To create a production version of your app:
+### Production Build
 
-```sh
+```bash
 npm run build
+npm run start
 ```
 
-You can preview the production build with `npm run preview`.
+The production server runs on port 3494 by default.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Usage
+
+1. Click **Start Recording** to begin capturing audio
+2. Select a browser tab or screen to share (with audio enabled)
+3. Optionally enable microphone to record your voice
+4. Click **Stop Recording** when finished
+5. Choose your output format and processing options
+6. Download your processed audio files
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/     # Svelte components
+│   ├── i18n/           # Internationalization
+│   ├── server/         # Server-side utilities
+│   ├── stores/         # Svelte stores
+│   └── utils/          # Client utilities
+├── routes/             # SvelteKit routes and API endpoints
+data/                   # Temporary recording storage
+```
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run start` | Run production server |
+| `npm run check` | Run type checking |
+| `npm run lint` | Run linter |
+| `npm run format` | Format code with Prettier |
+
+## Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Guidelines
+
+- Follow the existing code style
+- Run `npm run check` and `npm run lint` before submitting
+- Write clear commit messages
+- Update documentation as needed
+
+## Tech Stack
+
+- [SvelteKit](https://kit.svelte.dev/) - Full-stack framework
+- [Svelte 5](https://svelte.dev/) - UI framework with runes
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Vite](https://vitejs.dev/) - Build tool
+- [FFmpeg](https://ffmpeg.org/) - Audio processing
+
+## License
+
+This project is private. All rights reserved.
