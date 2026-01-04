@@ -2,7 +2,7 @@
  * Recording state management using Svelte 5 runes
  */
 
-import type { Translations } from '$lib/i18n';
+import type { Translations } from '$lib/i18n/index.svelte';
 
 export type RecordingState = 'idle' | 'recording' | 'stopped' | 'processing' | 'ready' | 'error';
 
@@ -19,9 +19,18 @@ export interface ProcessedTracks {
 	mixedAudio: string | null; // URL
 }
 
+export interface MicEffects {
+	boost: number; // 1.0 = no boost, up to 3.0 = 3x volume
+	noiseGate: boolean;
+	echo: boolean;
+	highpass: boolean; // Remove low frequency rumble
+	compressor: boolean; // Even out volume levels
+}
+
 export interface ProcessingOptions {
 	duckSystemAudio: boolean;
 	outputFormat: OutputFormat;
+	micEffects: MicEffects;
 }
 
 // Global state using runes
@@ -39,7 +48,14 @@ let processedTracks = $state<ProcessedTracks>({
 });
 let processingOptions = $state<ProcessingOptions>({
 	duckSystemAudio: false,
-	outputFormat: 'mp3'
+	outputFormat: 'mp3',
+	micEffects: {
+		boost: 1.0,
+		noiseGate: false,
+		echo: false,
+		highpass: false,
+		compressor: false
+	}
 });
 let statusMessage = $state('');
 let errorMessage = $state('');
@@ -179,6 +195,13 @@ export function getRecorderState() {
 			processingOptions = { ...processingOptions, outputFormat: value };
 		},
 
+		setMicEffect<K extends keyof MicEffects>(effect: K, value: MicEffects[K]) {
+			processingOptions = {
+				...processingOptions,
+				micEffects: { ...processingOptions.micEffects, [effect]: value }
+			};
+		},
+
 		reset() {
 			stopDurationTimer();
 			state = 'idle';
@@ -186,7 +209,7 @@ export function getRecorderState() {
 			selectedMicId = '';
 			recordedTracks = { systemAudio: null, micAudio: null };
 			processedTracks = { systemAudio: null, micAudio: null, mixedAudio: null };
-			processingOptions = { duckSystemAudio: false, outputFormat: 'mp3' };
+			processingOptions = { duckSystemAudio: false, outputFormat: 'mp3', micEffects: { boost: 1.0, noiseGate: false, echo: false, highpass: false, compressor: false } };
 			statusMessage = '';
 			errorMessage = '';
 			recordingDuration = 0;

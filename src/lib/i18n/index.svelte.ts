@@ -37,6 +37,18 @@ export interface Translations {
 	opusDesc: string;
 	duckSystemAudio: string;
 	duckHint: string;
+	micEffects: string;
+	micBoost: string;
+	micBoostHint: string;
+	micHighpass: string;
+	micHighpassHint: string;
+	micNoiseGate: string;
+	micNoiseGateHint: string;
+	micCompressor: string;
+	micCompressorHint: string;
+	micEcho: string;
+	micEchoHint: string;
+	previewMicrophone: string;
 	processAudio: string;
 	startOver: string;
 
@@ -128,6 +140,18 @@ const translations: Record<Language, Translations> = {
 		opusDesc: 'best quality, limited compatibility',
 		duckSystemAudio: 'Duck system audio while speaking',
 		duckHint: 'Automatically lower system audio volume when your microphone detects speech',
+		micEffects: 'Microphone Effects',
+		micBoost: 'Mic boost',
+		micBoostHint: 'Increase microphone volume (drag slider to adjust)',
+		micHighpass: 'High-pass filter',
+		micHighpassHint: 'Remove low frequency rumble and hum',
+		micNoiseGate: 'Noise gate',
+		micNoiseGateHint: 'Reduce background noise between speech',
+		micCompressor: 'Compressor',
+		micCompressorHint: 'Even out volume levels (makes quiet parts louder)',
+		micEcho: 'Echo/Reverb',
+		micEchoHint: 'Add a subtle echo effect to your voice',
+		previewMicrophone: 'Preview microphone',
 		processAudio: 'Process Audio',
 		startOver: 'Start Over',
 
@@ -217,6 +241,18 @@ const translations: Record<Language, Translations> = {
 		opusDesc: 'mejor calidad, compatibilidad limitada',
 		duckSystemAudio: 'Reducir audio del sistema al hablar',
 		duckHint: 'Reduce automáticamente el volumen del sistema cuando tu micrófono detecta voz',
+		micEffects: 'Efectos de Micrófono',
+		micBoost: 'Amplificar micrófono',
+		micBoostHint: 'Aumentar el volumen del micrófono (arrastra el control para ajustar)',
+		micHighpass: 'Filtro pasa-altos',
+		micHighpassHint: 'Eliminar ruidos graves y zumbidos',
+		micNoiseGate: 'Puerta de ruido',
+		micNoiseGateHint: 'Reducir el ruido de fondo entre el habla',
+		micCompressor: 'Compresor',
+		micCompressorHint: 'Nivelar el volumen (hace más fuertes las partes silenciosas)',
+		micEcho: 'Eco/Reverberación',
+		micEchoHint: 'Añadir un efecto de eco sutil a tu voz',
+		previewMicrophone: 'Probar micrófono',
 		processAudio: 'Procesar Audio',
 		startOver: 'Empezar de Nuevo',
 

@@ -41,6 +41,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		const duckSystemAudio = formData.get('duckSystemAudio') === 'true';
 		const outputFormat = (formData.get('outputFormat') as OutputFormat) || 'mp3';
 		const duration = parseInt(formData.get('duration') as string) || 0;
+		const micBoost = parseFloat(formData.get('micBoost') as string) || 1.0;
+		const micNoiseGate = formData.get('micNoiseGate') === 'true';
+		const micEcho = formData.get('micEcho') === 'true';
+		const micHighpass = formData.get('micHighpass') === 'true';
+		const micCompressor = formData.get('micCompressor') === 'true';
 
 		if (!systemAudio) {
 			throw error(400, { message: 'No system audio provided' });
@@ -70,23 +75,58 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Process mic audio if present
 		if (micAudio) {
+			// Build mic effects filter chain
+			const micFilters: string[] = [];
+			if (micHighpass) {
+				// High-pass filter: remove low frequency rumble (below 80Hz)
+				micFilters.push('highpass=f=80');
+			}
+			if (micNoiseGate) {
+				// Noise gate: silence audio below threshold, quick attack/release
+				micFilters.push('agate=threshold=0.02:ratio=4:attack=5:release=100');
+			}
+			if (micBoost > 1.0) {
+				// Boost volume by the specified amount
+				micFilters.push(`volume=${micBoost}`);
+			}
+			if (micCompressor) {
+				// Compressor: even out volume levels
+				micFilters.push('acompressor=threshold=-24dB:ratio=4:attack=5:release=250:makeup=2');
+			}
+			if (micEcho) {
+				// Multi-tap reverb simulation using multiple delays
+				micFilters.push('aecho=0.7:0.5:29|41|53|67|83|97|113|127:0.4|0.35|0.3|0.25|0.22|0.2|0.17|0.15');
+			}
+
 			const micOutputPath = getTrackPath(recordingId, 'mic', outputFormat);
+			const micFilterArg = micFilters.length > 0 ? `-af "${micFilters.join(',')}" ` : '';
 			await execAsync(
-				`ffmpeg -i "${micInputPath}" -ac 2 -ar 48000 -c:a ${codec} "${micOutputPath}" -y`
+				`ffmpeg -i "${micInputPath}" ${micFilterArg}-ac 2 -ar 48000 -c:a ${codec} "${micOutputPath}" -y`
 			);
 			tracks.mic = `mic.${outputFormat === 'aac' ? 'm4a' : outputFormat}`;
 
 			// Create mixed track
 			const mixedOutputPath = getTrackPath(recordingId, 'mixed', outputFormat);
 
+			// Build mic filter chain for mixing (apply effects before mixing)
+			const mixMicFilters = micFilters.length > 0 ? micFilters.join(',') : '';
+
 			if (duckSystemAudio) {
-				// Apply sidechaincompress for ducking
-				// Mic triggers compression on system audio
-				const filterComplex = [
-					'[1:a]asplit=2[sc][mic]',
-					'[0:a][sc]sidechaincompress=threshold=0.02:ratio=4:attack=50:release=500[ducked]',
-					'[ducked][mic]amix=inputs=2:duration=longest:weights=0.7 1[out]'
-				].join(';');
+				// Apply sidechaincompress for ducking with mic effects
+				let filterComplex: string;
+				if (mixMicFilters) {
+					filterComplex = [
+						`[1:a]${mixMicFilters},asplit=2[sc][mic]`,
+						'[0:a][sc]sidechaincompress=threshold=0.02:ratio=4:attack=50:release=500[ducked]',
+						'[ducked][mic]amix=inputs=2:duration=longest:weights=1 1[out]'
+					].join(';');
+				} else {
+					filterComplex = [
+						'[1:a]asplit=2[sc][mic]',
+						'[0:a][sc]sidechaincompress=threshold=0.02:ratio=4:attack=50:release=500[ducked]',
+						'[ducked][mic]amix=inputs=2:duration=longest:weights=1 1[out]'
+					].join(';');
+				}
 
 				await execAsync(
 					`ffmpeg -i "${systemInputPath}" -i "${micInputPath}" ` +
@@ -94,10 +134,17 @@ export const POST: RequestHandler = async ({ request }) => {
 						`-map "[out]" -ac 2 -ar 48000 -c:a ${codec} "${mixedOutputPath}" -y`
 				);
 			} else {
-				// Simple mix without ducking
+				// Simple mix with optional mic effects
+				let filterComplex: string;
+				if (mixMicFilters) {
+					filterComplex = `[1:a]${mixMicFilters}[micfx];[0:a][micfx]amix=inputs=2:duration=longest:weights=0.7 1[out]`;
+				} else {
+					filterComplex = '[0:a][1:a]amix=inputs=2:duration=longest:weights=0.7 1[out]';
+				}
+
 				await execAsync(
 					`ffmpeg -i "${systemInputPath}" -i "${micInputPath}" ` +
-						`-filter_complex "[0:a][1:a]amix=inputs=2:duration=longest:weights=0.7 1[out]" ` +
+						`-filter_complex "${filterComplex}" ` +
 						`-map "[out]" -ac 2 -ar 48000 -c:a ${codec} "${mixedOutputPath}" -y`
 				);
 			}
